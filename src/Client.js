@@ -452,7 +452,13 @@ class Client extends EventEmitter {
                 if (msg.isNewMsg) {
                     if(msg.type === 'ciphertext') {
                         // defer message event until ciphertext is resolved (type changed)
-                        msg.once('change:type', (_msg) => window.onAddMessageEvent(window.WWebJS.getMessageModel(_msg)));
+                        const timeoutCipher = setTimeout(() => {
+                            window.onAddMessageEvent(window.WWebJS.getMessageModel(msg));
+                        }, 5000);
+                        msg.once('change:type', (_msg) => {
+                            window.onAddMessageEvent(window.WWebJS.getMessageModel(_msg))
+                            clearTimeout(timeoutCipher);
+                        });
                     } else {
                         window.onAddMessageEvent(window.WWebJS.getMessageModel(msg)); 
                     }
