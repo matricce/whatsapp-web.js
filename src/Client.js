@@ -596,7 +596,7 @@ class Client extends EventEmitter {
             );
         }
 
-        const isBigFile = internalOptions.attachment.data.length > (1024 * 1024 * 79);
+        const isBigFile = internalOptions.attachment?.data?.length > (1024 * 1024 * 79);
 
         if (isBigFile) {
             const middle = internalOptions.attachment.data.length / 2;
@@ -617,7 +617,7 @@ class Client extends EventEmitter {
                 window.WWebJS.sendSeen(chatId);
             }
 
-            if(options.attachment.data && window.Store[`mediaChunk_${chatId}`]) {
+            if(options.attachment?.data && window.Store[`mediaChunk_${chatId}`]) {
                 options.attachment.data = window.Store[`mediaChunk_${chatId}`] + options.attachment.data;
                 delete window.Store[`mediaChunk_${chatId}`];
             }
