@@ -524,7 +524,7 @@ class Client extends EventEmitter {
                             window.onAddMessageEvent(window.WWebJS.getMessageModel(msg));
                         }, 10000);
                         msg.once('change:type', (_msg) => {
-                            window.onAddMessageEvent(window.WWebJS.getMessageModel(_msg))
+                            window.onAddMessageEvent(window.WWebJS.getMessageModel(_msg));
                             clearTimeout(timeoutCipher);
                         });
                     } else {
