@@ -450,8 +450,11 @@ class Message extends Base {
     async star() {
         await this.client.pupPage.evaluate((msgId) => {
             let msg = window.Store.Msg.get(msgId);
-
-            if (msg.canStar()) {
+            // TODO remove .canStar() once all clients are updated to >= v2.2244.5
+            const canStar = window.Store.MsgUtils ?
+                window.Store.MsgUtils.canStarMsg(msg) :
+                msg.canStar();
+            if (canStar) {
                 return window.Store.Cmd.sendStarMsgs(msg.chat, [msg], false);
             }
         }, this.id._serialized);
@@ -463,8 +466,11 @@ class Message extends Base {
     async unstar() {
         await this.client.pupPage.evaluate((msgId) => {
             let msg = window.Store.Msg.get(msgId);
-
-            if (msg.canStar()) {
+            // TODO remove .canStar() once all clients are updated to >= v2.2244.5
+            const canStar = window.Store.MsgUtils ?
+                window.Store.MsgUtils.canStarMsg(msg) :
+                msg.canStar();
+            if (canStar) {
                 return window.Store.Cmd.sendUnstarMsgs(msg.chat, [msg], false);
             }
         }, this.id._serialized);
