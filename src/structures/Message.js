@@ -306,9 +306,10 @@ class Message extends Base {
 
         const quotedMsg = await this.client.pupPage.evaluate((msgId) => {
             let msg = window.Store.Msg.get(msgId);
-            return msg.quotedMsgObj().serialize();
+            return msg._quotedMsgObj?.serialize() || msg.__x__quotedMsgObj?.serialize() || msg.quotedMsgObj?.()?.serialize() || msg.getRawQuotedMsgObj?.()?.serialize();
         }, this.id._serialized);
 
+        if(!quotedMsg) return undefined;
         return new Message(this.client, quotedMsg);
     }
 
