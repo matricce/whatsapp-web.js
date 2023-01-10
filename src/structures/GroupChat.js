@@ -225,7 +225,8 @@ class GroupChat extends Chat {
     async leave() {
         await this.client.pupPage.evaluate(chatId => {
             const chatWid = window.Store.WidFactory.createWid(chatId);
-            return window.Store.GroupUtils.sendExitGroup(chatWid);
+            const grupChat = window.Store.Chat.get(chatWid)
+            return window.Store.GroupUtils.sendExitGroup(grupChat);
         }, this.id._serialized);
     }
 
