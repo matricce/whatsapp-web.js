@@ -13,6 +13,7 @@ const ContactFactory = require('./factories/ContactFactory');
 const { ClientInfo, Message, MessageMedia, Contact, Location, GroupNotification, Label, Call, Buttons, List, Reaction, Chat } = require('./structures');
 const LegacySessionAuth = require('./authStrategies/LegacySessionAuth');
 const NoAuth = require('./authStrategies/NoAuth');
+const helper = require('./util/helper')
 
 /**
  * Starting point for interacting with the WhatsApp Web API
@@ -110,6 +111,9 @@ class Client extends EventEmitter {
       
         await page.setUserAgent(this.options.userAgent);
         if (this.options.bypassCSP) await page.setBypassCSP(true);
+
+        await helper.unregisterSW(page);
+        await helper.setWhatsappVer(page, '2.2320.10');
 
         this.pupBrowser = browser;
         this.pupPage = page;
