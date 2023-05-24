@@ -113,7 +113,7 @@ class Client extends EventEmitter {
         if (this.options.bypassCSP) await page.setBypassCSP(true);
 
         await helper.unregisterSW(page);
-        await helper.setWhatsappVer(page, '2.2313.8');
+        await helper.setWhatsappVer(page, '2.2320.10');
 
         this.pupBrowser = browser;
         this.pupPage = page;
