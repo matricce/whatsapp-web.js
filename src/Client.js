@@ -244,6 +244,11 @@ class Client extends EventEmitter {
                     }
                 });
 
+                const promises = [page.waitForSelector(QR_CONTAINER), page.waitForSelector(QR_RETRY_BUTTON)];
+                await Promise.race(promises);
+
+                if(promises[0] instanceof Error) throw new Error('QR selector not found');
+
                 await page.evaluate(
                     function (selectors) {
                         const qr_container = document.querySelector(
@@ -285,11 +290,14 @@ class Client extends EventEmitter {
 
             const handleLinkWithPhoneNumber = async () => {
                 const LINK_WITH_PHONE_BUTTON = '[data-testid="link-device-qrcode-alt-linking-hint"]';
+                const LINK_WITH_QR_BUTTON = 'span[role="button"]';
                 const PHONE_NUMBER_INPUT = '[data-testid="link-device-phone-number-input"]';
                 const NEXT_BUTTON = '[data-testid="link-device-phone-number-entry-next-button"]';
                 const CODE_CONTAINER = '[data-testid="link-with-phone-number-code-cells"]';
                 const GENERATE_NEW_CODE_BUTTON = '[data-testid="popup-controls-ok"]';
                 const LINK_WITH_PHONE_VIEW = '[data-testid="link-device-phone-number-code-view"]';
+                const ERROR_POPUP = '[data-testid="popup-contents"]';
+                const ERROR_POPUP_BUTTON_OK = '[data-testid="popup-controls-ok"]';
 
                 await page.exposeFunction('codeChanged', async (code) => {
                     /**
@@ -349,7 +357,12 @@ class Client extends EventEmitter {
                         });
                     }
 
-                    await waitForElementToExist(selectors.CODE_CONTAINER);
+                    const promises = [waitForElementToExist(selectors.CODE_CONTAINER), waitForElementToExist(selectors.ERROR_POPUP)];
+                    await Promise.race(promises);
+
+                    if(document.querySelector(selectors.ERROR_POPUP)) {
+                        throw new Error('Something went wrong while trying to link with phone number');
+                    }
 
                     const getCode = () => {
                         const codeContainer = document.querySelector(selectors.CODE_CONTAINER);
@@ -391,7 +404,17 @@ class Client extends EventEmitter {
                 }, {
                     CODE_CONTAINER,
                     GENERATE_NEW_CODE_BUTTON,
-                    LINK_WITH_PHONE_VIEW
+                    LINK_WITH_PHONE_VIEW,
+                    ERROR_POPUP,
+                }).catch(async (err) => {
+                    await page.click(ERROR_POPUP_BUTTON_OK).catch(() => {});
+                    await page.evaluate(async function (selectors) {
+                        const linkWithPhoneButton = document.querySelector(selectors.LINK_WITH_QR_BUTTON);
+                        if (linkWithPhoneButton) linkWithPhoneButton.click();
+                    }, {
+                        LINK_WITH_QR_BUTTON
+                    });
+                    throw new Error(err);
                 });
             };
 
@@ -400,7 +423,10 @@ class Client extends EventEmitter {
             if (linkingMethod.isQR()) {
                 await handleLinkWithQRCode();
             } else {
-                await handleLinkWithPhoneNumber();
+                await handleLinkWithPhoneNumber()
+                .catch(async () => {
+                    await handleLinkWithQRCode();
+                });
             }
 
             // Wait for link success
