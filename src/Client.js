@@ -927,6 +927,18 @@ class Client extends EventEmitter {
             );
         }
 
+        const isBigFile = internalOptions.attachment?.data?.length > (1024 * 1024 * 79);
+
+        if (isBigFile) {
+            const middle = internalOptions.attachment.data.length / 2;
+            await this.pupPage.evaluate(async (chatId, chunk) => {
+                if (chunk) {
+                    window.Store[`mediaChunk_${chatId}`] = chunk;
+                }
+            }, chatId, internalOptions.attachment.data.substring(0, middle));
+            internalOptions.attachment.data = internalOptions.attachment.data.substring(middle);
+        }
+
         const newMessage = await this.pupPage.evaluate(async (chatId, message, options, sendSeen) => {
             const chatWid = window.Store.WidFactory.createWid(chatId);
             const chat = await window.Store.Chat.find(chatWid);
@@ -934,6 +946,11 @@ class Client extends EventEmitter {
 
             if (sendSeen) {
                 await window.WWebJS.sendSeen(chatId);
+            }
+
+            if(options.attachment?.data && window.Store[`mediaChunk_${chatId}`]) {
+                options.attachment.data = window.Store[`mediaChunk_${chatId}`] + options.attachment.data;
+                delete window.Store[`mediaChunk_${chatId}`];
             }
 
             const msg = await window.WWebJS.sendMessage(chat, message, options, sendSeen);
