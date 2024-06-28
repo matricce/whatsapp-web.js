@@ -517,7 +517,7 @@ class Message extends Base {
                 }
             }
 
-            return window.Store.Cmd.sendDeleteMsgs(chat, [msg], true);
+            return window.Store.Cmd.sendDeleteMsgs(chat, { list: [msg], type: 'message' }, true);
         }, this.id._serialized, everyone);
     }
 
